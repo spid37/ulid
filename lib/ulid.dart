@@ -23,17 +23,28 @@ class Ulid {
   }
 
   /// Create a new [Ulid] instance.
-  factory Ulid({int millis}) {
-    final Uint8List data = new Uint8List(16);
+  factory Ulid({int millis, Uint8List entropy}) {
     int ts = millis ?? new DateTime.now().millisecondsSinceEpoch;
+    print(ts);
+    final Uint8List timePart = new Uint8List(6);
     for (int i = 5; i >= 0; i--) {
-      data[i] = ts & 0xFF;
+      timePart[i] = ts & 0xFF;
       ts = ts >> 8;
     }
-    for (int i = 6; i < 16; i++) {
-      data[i] = _random.nextInt(256);
+
+    final Uint8List entropyPart = new Uint8List(10);
+    if (entropy == null || entropy.isEmpty) {
+      for (var i = 0; i < entropyPart.length; i++) {
+        entropyPart[i] = _random.nextInt(256);
+      }
+    } else {
+      var len = entropy.length > 10 ? 10 : entropy.length;
+      for (var i = 0; i < len; i++) {
+        entropyPart[i] = entropy[i] ?? 0;
+      }
     }
-    return new Ulid._(data);
+
+    return new Ulid._(Uint8List.fromList(timePart + entropyPart));
   }
 
   /// Parse the canonical or the UUID format.
@@ -124,7 +135,6 @@ class Ulid {
 
   @override
   int get hashCode => _data.join().hashCode;
-
 
   void _encode(int inS, int inE, Uint8List buffer, int outS, int outE) {
     BigInt value = BigInt.from(0);
