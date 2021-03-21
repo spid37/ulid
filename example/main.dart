@@ -2,14 +2,15 @@
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:ulid/ulid.dart';
 
 void main() {
-  print(new Ulid());
-  print(new Ulid(
+  print(Ulid());
+  print(Ulid(
     millis: 1576809474892,
-    entropy: utf8.encode('this the custom entropy'),
+    entropy: Uint8List.fromList(utf8.encode('this the custom entropy')),
   ));
-  print(new Ulid().toUuid());
+  print(Ulid().toUuid());
 }
